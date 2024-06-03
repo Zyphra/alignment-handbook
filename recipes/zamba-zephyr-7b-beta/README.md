@@ -1,5 +1,5 @@
 
-# Instructions to Replicate Zephyr-7b-β
+# Instructions to Replicate Zamba-Zephyr-7b-β
 
 As described in the Zephyr [technical report](https://huggingface.co/papers/2310.16944), training this model proceeds in two steps:
 
@@ -8,15 +8,26 @@ As described in the Zephyr [technical report](https://huggingface.co/papers/2310
 
 See below for commands to train these models using either DeepSpeed ZeRO-3 or LoRA.
 
+## Preamble
+```shell
+# First, to avoid conflicts with wandb, run:
+git config --global --add safe.directory /workspace/alignment-handbook
+# Then move the cache to avoid running out of space:
+export HF_HOME= #whatever path you want to put the HF libs cache in, for me it's /workspace/hf_cache
+```
+In the following commands do not forget to add e.g. `CUDA_VISIBLE_DEVICES=0,1,2,3` if only using 4 GPUs, and to modify the deepspeed config file to account for it. (default num_processes: 8)
+
+Moreover, DO NOT FORGET TO ASSESS WHETHER YOU IMPLICITLY MODIFIED THE BATCH SIZE BY MODIFYING THE NUMBER OF GPUs ! (default for DPO for example is GAS=2, microbs=8 but that's for 8 devices)
+
 ## Full training examples
 
-You will require 8 GPUs (80GB of VRAM) to train the full model.
+You will require 8 GPUs (80GB of VRAM) to train the full model. Also have to disable FA2 since as of this day Zamba does not support it.
 ```shell
 # Step 1 - SFT
-ACCELERATE_LOG_LEVEL=info accelerate launch --config_file recipes/accelerate_configs/deepspeed_zero3.yaml scripts/run_sft.py recipes/zamba-zephyr-7b-beta/sft/config_full.yaml
+ACCELERATE_LOG_LEVEL=info accelerate launch --config_file recipes/accelerate_configs/deepspeed_zero3.yaml scripts/run_sft.py recipes/zamba-zephyr-7b-beta/sft/config_full.yaml --use_flash_attention_2=false
 
 # Step 2 - DPO
-ACCELERATE_LOG_LEVEL=info accelerate launch --config_file recipes/accelerate_configs/deepspeed_zero3.yaml scripts/run_dpo.py recipes/zamba-zephyr-7b-beta/dpo/config_full.yaml
+ACCELERATE_LOG_LEVEL=info accelerate launch --config_file recipes/accelerate_configs/deepspeed_zero3.yaml scripts/run_dpo.py recipes/zamba-zephyr-7b-beta/dpo/config_full.yaml --use_flash_attention_2=false
 ```
 
 ## QLoRA training examples

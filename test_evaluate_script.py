@@ -11,16 +11,15 @@ accelerator = Accelerator()
 # Prepare the model, tokenizer, and data for distributed training
 model, tokenizer = accelerator.prepare(model, tokenizer)
 
-print(next(model.parameters()).device)
-# from transformers import pipeline
+from transformers import pipeline
 
-# # Create a text generation pipeline with your fine-tuned model
-# generator = pipeline(task="text-generation", model=model, tokenizer=tokenizer)
+# Create a text generation pipeline with your fine-tuned model
+generator = pipeline(task="text-generation", model=model, tokenizer=tokenizer)
 
-# # The prompt you want to generate text from
-# prompt = "Here is a sample prompt"
+# The prompt you want to generate text from
+prompt = "Here is a sample prompt"
 
-# # Generate text 
-# generated_text = generator(prompt, max_length=100, num_return_sequences=1, temperature=0.7)[0]['generated_text']
+# Generate text 
+generated_text = generator(prompt, max_length=100, num_return_sequences=1, temperature=0.7)[0]['generated_text']
 
-# print(generated_text)
+print(generated_text)
